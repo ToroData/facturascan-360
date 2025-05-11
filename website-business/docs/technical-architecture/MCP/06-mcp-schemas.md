@@ -1,6 +1,6 @@
 ---
 id: mcp
-title: 4. Model Context Protocol (MCP)
+title: 6. Model Context Protocol (MCP)
 ---
 
 # Model Context Protocol (MCP) – Design Specification
