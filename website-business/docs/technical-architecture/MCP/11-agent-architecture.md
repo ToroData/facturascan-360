@@ -28,7 +28,7 @@ This document describes the agent topology, invocation strategy, lifecycle, and 
 
 ## 2. Execution Topology
 
-![Execution Topology](../static/images/mcp-execution-topology.png)
+![Execution Topology](../../static/images/mcp-execution-topology.png)
 
 * **Push-based** orchestration via **Step Functions**
 * Agents produce immutable MCP contexts persisted in database

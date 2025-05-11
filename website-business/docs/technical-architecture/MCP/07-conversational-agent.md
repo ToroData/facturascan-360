@@ -37,7 +37,7 @@ To enable business users (accountants, CFOs, administrators) to ask questions in
 
 ## 3. Agent Pipeline
 
-![Agent Pipeline](../static/images/agent-pipeline.png)
+![Agent Pipeline](../../static/images/agent-pipeline.png)
 
 ---
 

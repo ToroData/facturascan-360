@@ -187,4 +187,4 @@ The hybrid schema enables:
 * Structured access to key metrics for validation and analytics.
 * Extensibility for new agent types (e.g., risk scoring, audit compliance).
 
-Next: see [`04-mcp-schemas.md`](./06-mcp-schemas.md) for definitions of `InvoiceContext`, `ValidationContext`, and `AnalyticsContext`.
+Next: see [`04-mcp-schemas.md`](./MCP/06-mcp-schemas.md) for definitions of `InvoiceContext`, `ValidationContext`, and `AnalyticsContext`.

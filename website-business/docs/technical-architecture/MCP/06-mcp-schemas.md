@@ -31,7 +31,7 @@ MCP ensures:
 
 ## 2. Agent Interaction Graph (Conceptual)
 
-![Agent Interaction Graph](../static/images/mcp-flow.png)
+![Agent Interaction Graph](../../static/images/mcp-flow.png)
 
 ---
 
