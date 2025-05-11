@@ -1,235 +1,190 @@
 ---
 id: db-analytics
-title: 3. Relational Database Design
+title: 3. Hybrid Relational + Semantic Database Design
 ---
 
-# Relational Database Design – FacturaScan 360
+# Hybrid Relational + Semantic Database Design – FacturaScan 360
 
 ## Overview
 
-This document defines the relational data model for *FacturaScan 360*, including entity structure, multi-tenant strategies, indexing policies, analytical views, and compatibility with Business Intelligence (BI) tools. The goal is to enable secure, performant, and scalable storage of invoice-related data, user access control, and validation outcomes.
+FacturaScan 360 integrates AWS Textract, semantic validation, and conversational analytics through a modular AI agent system governed by the Model Context Protocol (MCP). This architecture requires a database that supports:
+
+- Structured and semi-structured data simultaneously.
+- Persistent traceability of OCR results and validations.
+- Storage and retrieval of semantic contexts exchanged via MCP agents.
+- Analytical querying for dashboards and AI reporting agents.
+
+This document defines a relational-hybrid data model optimized for multi-tenant SaaS, semantic processing, and BI tool integration.
 
 ---
 
-## 1. Core Tables
+## 1. Core Table: `invoices`
 
-### 1.1. `organizations`
-Represents each tenant (client company).
+The `invoices` table captures the full lifecycle of a scanned invoice, from raw OCR to contextual MCP representations.
 
-| Column        | Type       | Description                            |
-|---------------|------------|----------------------------------------|
-| `id`          | UUID (PK)  | Unique organization identifier         |
-| `name`        | TEXT       | Organization legal name                |
-| `created_at`  | TIMESTAMP  | Registration date                      |
-| `is_active`   | BOOLEAN    | Activation status                      |
+| Column               | Type          | Description                                                      |
+|----------------------|---------------|------------------------------------------------------------------|
+| `id`                 | UUID (PK)     | Unique invoice identifier                                        |
+| `tenant_id`          | UUID (FK)     | Foreign key to `organizations.id`                                |
+| `uploaded_by`        | UUID (FK)     | User who submitted the document                                 |
+| `file_url`           | TEXT          | Location of the original PDF in S3                               |
+| `textract_raw`       | JSONB         | Raw AWS Textract output                                          |
+| `invoice_context`    | JSONB         | Parsed semantic representation (MCP schema)                      |
+| `validation_context` | JSONB         | Validation outcomes (MCP schema)                                 |
+| `analytics_context`  | JSONB         | Derived metrics and business features (MCP schema)               |
+| `status`             | TEXT          | Enum: 'pending', 'validated', 'error', 'analyzed'                |
+| `created_at`         | TIMESTAMP     | Upload timestamp                                                 |
 
----
-
-### 1.2. `users`
-Represents system users, linked to organizations.
-
-| Column         | Type        | Description                              |
-|----------------|-------------|------------------------------------------|
-| `id`           | UUID (PK)   | Unique user identifier                   |
-| `email`        | TEXT        | User email address                       |
-| `role`         | TEXT        | Enum: 'admin', 'editor', 'reviewer', 'viewer' |
-| `tenant_id`    | UUID (FK)   | Foreign key to `organizations.id`        |
-| `created_at`   | TIMESTAMP   | Account creation date                    |
-| `is_active`    | BOOLEAN     | Active flag (managed via Cognito)        |
+**Indexes**:
+- `(tenant_id, created_at)`
+- `GIN(textract_raw)` and `GIN(invoice_context)` for JSONB search (optional)
 
 ---
 
-### 1.3. `invoices`
-Stores uploaded invoice metadata and status.
+## 2. Supporting Tables
 
-| Column             | Type        | Description                            |
-|--------------------|-------------|----------------------------------------|
-| `id`               | UUID (PK)   | Unique invoice identifier              |
-| `tenant_id`        | UUID (FK)   | Owner organization                     |
-| `uploaded_by`      | UUID (FK)   | User who uploaded                      |
-| `supplier_name`    | TEXT        | Detected supplier                      |
-| `invoice_number`   | TEXT        | Supplier-provided number               |
-| `issue_date`       | DATE        | Invoice issue date                     |
-| `due_date`         | DATE        | Invoice due date                       |
-| `subtotal`         | NUMERIC     | Amount before VAT                      |
-| `vat`              | NUMERIC     | Value-added tax                        |
-| `total`            | NUMERIC     | Total amount                           |
-| `status`           | TEXT        | Enum: 'pending', 'validated', 'error'  |
-| `created_at`       | TIMESTAMP   | Upload timestamp                       |
-| `file_url`         | TEXT        | S3 URL for the PDF                     |
+### 2.1. `organizations`
 
-**Indexes**:  
-- Composite: `(tenant_id, issue_date)`  
-- Single: `invoice_number`, `supplier_name`, `created_at`
+| Column       | Type        | Description                         |
+|--------------|-------------|-------------------------------------|
+| `id`         | UUID (PK)   | Organization identifier             |
+| `name`       | TEXT        | Legal or business name              |
+| `created_at` | TIMESTAMP   | Account creation date               |
 
 ---
 
-### 1.4. `validations`
-Stores validation results per invoice.
+### 2.2. `users`
 
-| Column          | Type        | Description                          |
-|-----------------|-------------|--------------------------------------|
-| `id`            | UUID (PK)   | Validation record                    |
-| `invoice_id`    | UUID (FK)   | Link to invoice                      |
-| `rule_code`     | TEXT        | Validation rule ID (e.g., 'V-01')     |
-| `message`       | TEXT        | Description of violation             |
-| `severity`      | TEXT        | Enum: 'info', 'warning', 'error'     |
-| `created_at`    | TIMESTAMP   | Validation timestamp                 |
-
-**Index**: `invoice_id`
+| Column       | Type        | Description                         |
+|--------------|-------------|-------------------------------------|
+| `id`         | UUID (PK)   | User ID                             |
+| `email`      | TEXT        | Email (Cognito-based auth)          |
+| `role`       | TEXT        | Enum: 'admin', 'editor', etc.       |
+| `tenant_id`  | UUID (FK)   | Link to `organizations.id`          |
+| `is_active`  | BOOLEAN     | Activation state                    |
 
 ---
 
-### 1.5. `alerts`
-Triggered notifications (email, Slack) based on validation.
+### 2.3. `alerts`
 
-| Column         | Type        | Description                           |
-|----------------|-------------|---------------------------------------|
-| `id`           | UUID (PK)   | Alert ID                              |
-| `invoice_id`   | UUID (FK)   | Affected invoice                      |
-| `type`         | TEXT        | Enum: 'email', 'slack', 'teams'       |
-| `status`       | TEXT        | Enum: 'sent', 'failed', 'pending'     |
-| `recipient`    | TEXT        | Email or webhook URL                  |
-| `triggered_at` | TIMESTAMP   | Time of dispatch                      |
+| Column       | Type        | Description                         |
+|--------------|-------------|-------------------------------------|
+| `id`         | UUID (PK)   | Alert ID                            |
+| `invoice_id` | UUID (FK)   | Affected invoice                    |
+| `type`       | TEXT        | 'email', 'slack', 'teams'           |
+| `status`     | TEXT        | 'sent', 'pending', 'failed'         |
+| `triggered_at`| TIMESTAMP  | Time of alert dispatch              |
 
 ---
 
-### 1.6. `logs`
-Tracks user actions and system-level events.
+### 2.4. `logs`
 
-| Column         | Type        | Description                            |
-|----------------|-------------|----------------------------------------|
-| `id`           | UUID (PK)   | Log entry                              |
-| `user_id`      | UUID (FK)   | User responsible                       |
-| `tenant_id`    | UUID (FK)   | Associated organization                |
-| `action_type`  | TEXT        | Enum: 'upload', 'validate', 'alert'    |
-| `description`  | TEXT        | Free-text description                  |
-| `timestamp`    | TIMESTAMP   | Time of event                          |
+Used for user actions and system auditing.
+
+| Column        | Type        | Description                        |
+|---------------|-------------|------------------------------------|
+| `id`          | UUID (PK)   | Log ID                             |
+| `user_id`     | UUID (FK)   | Associated user                    |
+| `action_type` | TEXT        | 'upload', 'validate', 'alert'      |
+| `description` | TEXT        | Free-text message                  |
+| `timestamp`   | TIMESTAMP   | Action time                        |
 
 ---
 
-## 2. Multi-Tenant Design
+## 3. Multi-Tenant Strategy
 
-FacturaScan 360 supports **logical separation of tenant data** using:
+All tables share a **unified schema** with `tenant_id` as foreign key and enforcement via **PostgreSQL Row-Level Security (RLS)**.
 
-- **Shared schema** with `tenant_id` in all tables.
-- **Row-Level Security (RLS)** in PostgreSQL, activated with:
-  ```sql
-  CREATE POLICY tenant_isolation ON invoices
-  USING (tenant_id = current_setting('app.current_tenant')::uuid);
-```
-
-Upon each request, the backend sets:
+### Policy Example
 
 ```sql
-SET app.current_tenant = 'org_12ab3c';
+CREATE POLICY tenant_isolation ON invoices
+USING (tenant_id = current_setting('app.current_tenant')::uuid);
 ```
-
-**Advantages**:
-
-* Simplifies schema management.
-* Enables PostgreSQL-native tenant isolation.
-* Compatible with BI tools.
 
 ---
 
-## 3. Analytical Views
+## 4. Analytical Views (SQL-Based)
 
-Designed to support dashboards and external BI queries.
-
-### 3.1. `view_invoice_totals_monthly`
-
-Aggregates invoice totals by tenant and month.
+### 4.1. Monthly Totals per Tenant
 
 ```sql
 CREATE VIEW view_invoice_totals_monthly AS
 SELECT
   tenant_id,
-  date_trunc('month', issue_date) AS month,
+  date_trunc('month', created_at) AS month,
   COUNT(*) AS invoice_count,
-  SUM(subtotal) AS total_subtotal,
-  SUM(vat) AS total_vat,
-  SUM(total) AS total_amount
+  SUM((invoice_context->>'subtotal')::numeric) AS subtotal,
+  SUM((invoice_context->>'vat')::numeric) AS vat,
+  SUM((invoice_context->>'total')::numeric) AS total
 FROM invoices
 GROUP BY tenant_id, month;
 ```
 
 ---
 
-### 3.2. `view_validation_summary`
-
-Summarizes validations by rule and severity.
+### 4.2. Error Rate per Rule
 
 ```sql
-CREATE VIEW view_validation_summary AS
+CREATE VIEW view_validation_error_rate AS
 SELECT
-  v.tenant_id,
-  v.rule_code,
-  v.severity,
+  tenant_id,
+  validation_context->>'rule_id' AS rule_id,
   COUNT(*) AS occurrences
-FROM validations v
-JOIN invoices i ON v.invoice_id = i.id
-GROUP BY v.tenant_id, v.rule_code, v.severity;
+FROM invoices
+WHERE status = 'error'
+GROUP BY tenant_id, rule_id;
 ```
 
 ---
 
-### 3.3. `view_duplicate_invoices`
-
-Detects potential duplicates based on supplier and number.
+### 4.3. Duplicate Invoices Detected
 
 ```sql
-CREATE VIEW view_duplicate_invoices AS
+CREATE VIEW view_possible_duplicates AS
 SELECT
   tenant_id,
-  supplier_name,
-  invoice_number,
-  COUNT(*) AS occurrences
+  invoice_context->>'supplier_name' AS supplier,
+  invoice_context->>'invoice_number' AS invoice_number,
+  COUNT(*) AS count
 FROM invoices
-GROUP BY tenant_id, supplier_name, invoice_number
+GROUP BY tenant_id, supplier, invoice_number
 HAVING COUNT(*) &gt; 1;
 ```
 
 ---
 
-## 4. Derived Columns and Metrics
+## 5. JSONB Column Semantics (MCP Contexts)
 
-To support advanced reporting and future anomaly detection:
+Each context field (`invoice_context`, `validation_context`, `analytics_context`) adheres to a well-defined **MCP schema**. These contexts are:
 
-| Column                | Table    | Formula / Source                          |
-| --------------------- | -------- | ----------------------------------------- |
-| `vat_ratio`           | invoices | `vat / subtotal`                          |
-| `is_total_consistent` | invoices | `ABS(total - (subtotal + vat)) &lt; 0.01` |
-| `error_count`         | invoices | COUNT from `validations`                  |
-| `has_critical_alert`  | invoices | EXISTS critical validation OR alert       |
+* **Machine-readable**
+* **AI-agent-exchangeable**
+* **Traceable** for audit and reprocessing
 
-These columns can be precomputed or exposed as **materialized views**.
+These will be detailed separately in the *MCP schema documentation*.
 
 ---
 
-## 5. BI Tool Compatibility
+## 6. BI Compatibility and External Access
 
-The schema is designed to be compatible with tools such as:
+The data model supports direct integration with BI tools:
 
-| Tool     | Integration Method           | Notes                               |
-| -------- | ---------------------------- | ----------------------------------- |
-| Metabase | PostgreSQL direct connection | Read-only user role                 |
-| Superset | SQLAlchemy or direct PGSQL   | Supports dashboards and alerts      |
-| Tableau  | PostgreSQL connector         | Can use views and materialized data |
-
-Additional features to support BI access:
-
-* Indexing on time-based and grouping columns.
-* Materialized views for expensive aggregations.
-* Read-only DB role for dashboard queries.
+| Tool     | Access method             | Notes                                 |
+| -------- | ------------------------- | ------------------------------------- |
+| Metabase | PostgreSQL read-only user | Can explore both views and JSONB data |
+| Superset | SQLAlchemy connector      | Used for advanced dashboards          |
+| Tableau  | PostgreSQL driver         | Compatible with structured columns    |
 
 ---
 
-## 6. Maintenance and Performance Notes
+## 7. Summary
 
-* Use **partitioning by tenant** if scaling to large volumes.
-* Schedule **VACUUM ANALYZE** periodically.
-* Enable **query logging** for BI traffic to monitor cost.
-* Prepare **archive tables** for invoices > 12 months old.
+The hybrid schema enables:
 
----
+* Long-term persistence of raw and semantic invoice data.
+* Modular integration of AI agents via MCP.
+* Structured access to key metrics for validation and analytics.
+* Extensibility for new agent types (e.g., risk scoring, audit compliance).
+
+Next: see [`04-mcp-schemas.md`](./06-mcp-schemas.md) for definitions of `InvoiceContext`, `ValidationContext`, and `AnalyticsContext`.
