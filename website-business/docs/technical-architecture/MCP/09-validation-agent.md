@@ -15,7 +15,7 @@ The agent ensures the invoice complies with legal, accounting, and operational c
 
 ## 1. Input Schema
 
-The agent receives a single `InvoiceContext` object (as defined in [`04-mcp-schemas.md`](../protocols/04-mcp-schemas.md)).
+The agent receives a single `InvoiceContext` object (as defined in [`06-mcp-schemas.md`](./06-mcp-schemas.md)).
 
 ### Minimal Required Fields
 
