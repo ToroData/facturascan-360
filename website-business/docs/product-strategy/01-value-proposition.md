@@ -161,10 +161,11 @@ A firm manages invoice intake for ten clients. The system provides a filtered vi
 
 | Item                      | Manual Process      | FacturaScan 360 (MVP)     |
 | ------------------------- | ------------------- | ------------------------- |
-| Monthly staff time        | 10–20 hours         | <1 hour                   |
+| Monthly staff time        | 10–20 hours         | &lt 1 hour                |
 | Error correction workload | High                | Minimal                   |
 | Visibility / traceability | Low (email, Excel)  | High (dashboard, alerts)  |
 | Audit readiness           | Poor                | Structured and exportable |
-| Monthly operational cost  | Implicit (€200–400) | Explicit (< €10–15)       |
+| Monthly operational cost  | Implicit (€200–400) | Explicit (&lt; €10–15)    |
+
 
 ---
