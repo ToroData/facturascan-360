@@ -15,7 +15,7 @@ This agent enables the transformation of invoice metadata into time-series metri
 
 ## 1. Input: `InvoiceContext`
 
-The agent receives as input a valid `InvoiceContext` (see [`04-mcp-schemas.md`](../protocols/04-mcp-schemas.md)). The minimum required fields are:
+The agent receives as input a valid `InvoiceContext` (see [`06-mcp-schemas.md`](./06-mcp-schemas.md)). The minimum required fields are:
 
 - `supplier_name`, `supplier_tax_id`
 - `subtotal`, `vat`, `total`, `currency`
