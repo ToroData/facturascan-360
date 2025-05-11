@@ -5,7 +5,7 @@ title: Value Proposition
 
 # Value Proposition and Market Validation
 
-## 1. Problem Statement
+## Problem Statement
 
 Invoice processing represents a critical administrative task for freelancers, small and medium-sized enterprises (SMEs), and accounting firms. However, improper handling of invoice data—whether due to human error, insufficient validation, or lack of automation—leads to significant economic, fiscal, and operational risks. Key pain points include:
 
@@ -25,7 +25,7 @@ Quantitative impact:
 
 ---
 
-## 2. Differentiation from Existing Solutions
+## Differentiation from Existing Solutions
 
 FacturaScan 360 differentiates itself from conventional solutions such as Holded, Sage, basic OCR APIs, or manual workflows in Excel by integrating semantic validation, proactive alert systems, and simplified installation with minimal configuration.
 
@@ -46,7 +46,7 @@ Key distinguishing factors:
 
 ---
 
-## 3. MVP Functional Scope and Business Relevance
+## MVP Functional Scope and Business Relevance
 
 The MVP includes the following essential components aimed at immediate business value and operational utility:
 
@@ -64,7 +64,7 @@ The MVP offering addresses urgent operational needs for all segments and is buil
 
 ---
 
-## 4. Branding and Naming Justification
+## Branding and Naming Justification
 
 **Product Name: FacturaScan 360**
 
@@ -83,7 +83,7 @@ Brand tone and visual identity:
 
 ---
 
-## 5. Buyer Persona Segmentation
+## Buyer Persona Segmentation
 
 | Segment           | Monthly Volume        | Core Need                                   | Purchase Decision Driver       | Acquisition Channels                     |
 |------------------|------------------------|---------------------------------------------|--------------------------------|-------------------------------------------|
@@ -99,7 +99,7 @@ Pain points addressed:
 
 ---
 
-## 6. Semantic Validation Rules
+## Semantic Validation Rules
 
 The semantic validation engine applies a fixed, extensible set of rules to ensure invoice consistency:
 
@@ -116,7 +116,7 @@ All rules are applied automatically. No per-client customization is supported at
 
 ---
 
-## 7. Usage Scenarios (Representative Use Cases)
+## Usage Scenarios (Representative Use Cases)
 
 ### Use Case 1 – Freelancer  
 An independent contractor uploads receipts from various service providers. One of the PDFs is accidentally uploaded twice. The system flags the duplicate and sends an alert via email before export.
@@ -129,7 +129,7 @@ A firm manages invoice intake for ten clients. The system provides a filtered vi
 
 ---
 
-## 8. Expected Performance Metrics (MVP KPIs)
+## Expected Performance Metrics (MVP KPIs)
 
 | KPI                                | Target Value (MVP)     | Description                                     |
 |-----------------------------------|-------------------------|-------------------------------------------------|
@@ -141,13 +141,13 @@ A firm manages invoice intake for ten clients. The system provides a filtered vi
 
 ---
 
-## 9. End-to-End Workflow Diagram (Mermaid)
+## End-to-End Workflow Diagram (Mermaid)
 
 ![Invoice processing flow diagram](../static/images/invoice-workflow.png)
 
 ---
 
-## 10. Segment Value Summary Table
+## Segment Value Summary Table
 
 | Segment         | Time Saved (monthly) | Errors Prevented | Estimated Value (€) |
 | --------------- | -------------------- | ---------------- | ------------------- |
@@ -157,7 +157,7 @@ A firm manages invoice intake for ten clients. The system provides a filtered vi
 
 ---
 
-## 11. Total Cost of Ownership Comparison
+## Total Cost of Ownership Comparison
 
 | Item                      | Manual Process      | FacturaScan 360 (MVP)     |
 | ------------------------- | ------------------- | ------------------------- |
