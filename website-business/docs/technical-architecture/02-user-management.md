@@ -1,6 +1,6 @@
 ---
 id: auth-security
-title: Auth Security
+title: 02 User Management
 ---
 
 # User Management and Security Design – AWS Cognito

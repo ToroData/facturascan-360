@@ -1,6 +1,6 @@
 ---
 id: value-proposition
-title: Value Proposition
+title: 01 Value Proposition
 ---
 
 # Value Proposition and Market Validation
