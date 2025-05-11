@@ -1,6 +1,6 @@
 ---
 id: mvp-design
-title: Mvp Design
+title: 2. MVP Design
 ---
 
 # MVP Technical and Functional Design – FacturaScan 360

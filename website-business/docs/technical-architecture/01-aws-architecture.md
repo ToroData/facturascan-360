@@ -1,6 +1,6 @@
 ---
 id: saas-cloud-architecture
-title: 01 AWS Architecture
+title: 1. AWS Architecture
 ---
 
 # AWS Cloud Architecture for Multi-Tenant SaaS – FacturaScan 360
